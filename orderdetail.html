@@ -28,8 +28,18 @@
             box-sizing: border-box;
         }
 
-        .bg-red-subtle {
-            background-color: #f8d7da;
+        body {
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at 10% 0%, rgba(220, 53, 69, .14), transparent 24rem),
+                linear-gradient(180deg, #fff7f4 0%, #f4f7fb 100%);
+            color: #263342;
+        }
+
+        .navbar {
+            border-bottom: 1px solid rgba(220, 53, 69, .12);
+            background: rgba(255, 255, 255, .9) !important;
+            backdrop-filter: blur(14px);
         }
 
         .text-red {
@@ -37,7 +47,167 @@
         }
 
         .container {
-            max-width: 600px;
+            max-width: 720px;
+        }
+
+        .brand-mark {
+            width: 46px;
+            height: 46px;
+            object-fit: contain;
+        }
+
+        .brand-copy {
+            line-height: 1.25;
+        }
+
+        .brand-copy strong {
+            display: block;
+            color: #202a35;
+            font-size: .98rem;
+            font-weight: 800;
+        }
+
+        .brand-copy span {
+            display: block;
+            color: #697586;
+            font-size: .82rem;
+        }
+
+        .hero-panel {
+            margin-top: 20px;
+            padding: 22px 20px;
+            border: 1px solid rgba(220, 53, 69, .14);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, .9);
+            box-shadow: 0 18px 46px rgba(34, 46, 60, .08);
+        }
+
+        .hero-panel .eyebrow {
+            color: #b4232f;
+            font-size: .78rem;
+            font-weight: 800;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+        }
+
+        .hero-panel h1 {
+            margin: 6px 0 8px;
+            color: #202a35;
+            font-size: clamp(1.45rem, 5vw, 2rem);
+            font-weight: 800;
+            letter-spacing: 0;
+            line-height: 1.22;
+        }
+
+        .hero-panel p {
+            margin: 0;
+            color: #697586;
+            font-size: .96rem;
+            line-height: 1.65;
+        }
+
+        .form-card {
+            margin-top: 16px;
+            margin-bottom: 48px;
+            padding: 20px;
+            border: 1px solid #e1e7ef;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, .96);
+            box-shadow: 0 18px 46px rgba(34, 46, 60, .08);
+        }
+
+        .section-heading {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 8px 0 2px;
+            padding: 14px 0 4px;
+            border-top: 1px solid #edf1f5;
+            color: #202a35;
+            font-size: 1.02rem;
+            font-weight: 800;
+        }
+
+        .section-heading:first-of-type {
+            margin-top: 0;
+            padding-top: 0;
+            border-top: 0;
+        }
+
+        .section-heading i {
+            display: inline-grid;
+            width: 34px;
+            height: 34px;
+            place-items: center;
+            border-radius: 10px;
+            color: #dc3545;
+            background: #fff1f1;
+        }
+
+        label {
+            margin-bottom: 7px;
+            color: #263342;
+            font-weight: 700;
+        }
+
+        .form-control,
+        .form-select {
+            min-height: 46px;
+            border-color: #ccd5df;
+            border-radius: 12px !important;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 .22rem rgba(220, 53, 69, .16);
+        }
+
+        .alert {
+            border-radius: 12px;
+        }
+
+        .alert-warning {
+            border-color: #ffe2a8;
+            background: #fff8e8;
+            color: #6f4d00;
+        }
+
+        .alert-danger {
+            border-color: #f4c5ca;
+            background: #fff0f2;
+            color: #842029;
+        }
+
+        #image-label {
+            display: grid;
+            min-height: 96px;
+            place-items: center;
+            border: 2px dashed #f1a3aa !important;
+            border-radius: 14px !important;
+            background: #fff6f7 !important;
+            color: #b4232f;
+            font-weight: 800;
+            transition: .16s ease;
+        }
+
+        #image-label:hover {
+            border-color: #dc3545 !important;
+            background: #fff0f2 !important;
+        }
+
+        .btn-danger {
+            min-height: 52px;
+            border: 0;
+            border-radius: 12px !important;
+            background: #dc3545;
+            font-weight: 800;
+            box-shadow: 0 10px 24px rgba(220, 53, 69, .22);
+        }
+
+        .btn-danger:disabled {
+            background: #aeb7c2;
+            box-shadow: none;
         }
 
         .img-grid-row {
@@ -58,27 +228,49 @@
             vertical-align: middle;
             width: 100%;
         }
+
+        @media (max-width: 575.98px) {
+            .container {
+                padding-left: 14px;
+                padding-right: 14px;
+            }
+
+            .hero-panel,
+            .form-card {
+                border-radius: 14px;
+            }
+
+            .form-card {
+                padding: 16px;
+            }
+        }
     </style>
 
 </head>
 
 <body class="bg-light">
-    <nav class="navbar bg-danger-subtle navbar-light m-0 py-1">
+    <nav class="navbar navbar-light m-0 py-2">
         <div class="container-fluid">
             <a class="navbar-brand d-flex align-items-center" href="#">
-                <img src="https://img2.pic.in.th/pic/-1920-x-1920-6.png" alt="Logo" height="40"
-                    class="d-inline-block align-text-top">
+                <img src="https://img2.pic.in.th/pic/-1920-x-1920-6.png" alt="Logo"
+                    class="brand-mark d-inline-block align-text-top">
+                <span class="brand-copy ms-2">
+                    <strong>HappyLife Station</strong>
+                    <span>Order detail form</span>
+                </span>
             </a>
         </div>
     </nav>
     <div class="container">
-        <div class="row">
+        <div class="row hero-panel">
             <div class="col-12">
-                <div class="text-center mt-3 h4 text-red fw-bold">แบบฟอร์มส่งรายละเอียดสั่งสินค้า</div>
+                <div class="eyebrow">Customer Submission</div>
+                <h1>แบบฟอร์มส่งรายละเอียดสั่งสินค้า</h1>
+                <p>กรอกข้อมูลออเดอร์ รายละเอียดงาน และอัปโหลดรูปตามจำนวนที่แบบสินค้ารองรับ เพื่อให้ทีมงานจัดทำงานได้ถูกต้อง</p>
             </div>
         </div>
         <main>
-            <form id="mainform" class="needs-validation" novalidate>
+            <form id="mainform" class="needs-validation form-card" novalidate>
                 <div class="row g-3 mt-3">
                     <div class="col-12 text-center d-none">
                         <div class="d-flex flex-column align-items-center justify-content-center">
@@ -89,6 +281,12 @@
                     </div>
                     <div class="col-12">
                         <small class="text-danger">* จำเป็นต้องกรอก</small>
+                    </div>
+                    <div class="col-12">
+                        <div class="section-heading">
+                            <i class="bi bi-receipt-cutoff"></i>
+                            ข้อมูลออเดอร์
+                        </div>
                     </div>
                     <div class="col-12">
                         <label for="platform">
@@ -157,6 +355,12 @@
                         </div>
                     </div>
                     <div class="col-12">
+                        <div class="section-heading">
+                            <i class="bi bi-stars"></i>
+                            รายละเอียดงาน
+                        </div>
+                    </div>
+                    <div class="col-12">
                         <label for="detail">
                             <i class="bi bi-file-earmark-richtext-fill text-red"></i>
                             ข้อความที่ต้องการให้ใส่บนงาน <span class="text-danger">*</span></label>
@@ -182,6 +386,12 @@
                         <input type="text" class="form-control rounded-3" id="musiclink" name="musiclink">
                         <div class="invalid-feedback">
                             กรุณากรอกลิงค์เพลงจาก Youtube / Spotify
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="section-heading">
+                            <i class="bi bi-images"></i>
+                            รูปภาพสำหรับทำงาน
                         </div>
                     </div>
                     <div class="col-12">
@@ -224,6 +434,10 @@
 
                        
                     </div>
+                </div>
+                <div class="section-heading">
+                    <i class="bi bi-shield-check"></i>
+                    ยืนยันข้อมูล
                 </div>
                 <div class="row mb-5 mt-4">
                     <div class="col-12 text-center">
