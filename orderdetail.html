@@ -658,14 +658,21 @@
             submitButton.prop('disabled', true);
 
             try {
+                const lineProfile = await liff.getProfile();
+                const decodedToken = liff.getDecodedIDToken();
+                const lineUserId = lineProfile.userId || decodedToken?.sub;
+                if (!lineUserId) {
+                    throw new Error('ไม่สามารถระบุบัญชี LINE ได้ กรุณาปิดและเปิดฟอร์มจาก LINE อีกครั้ง');
+                }
+
                 const fileIds = await uploadFiles();
                 let data = $('#mainform').serializeArray().reduce((obj, item) => {
                     obj[item.name] = item.value;
                     return obj;
                 }, { fileIds: fileIds.join(','), opt: 'submit' });
-                data.uid = liff.getDecodedIDToken().sub;
-                data.profile = $('#username').text().trim();
-                data.picture = $('#userAvatar').attr('src');
+                data.uid = lineUserId;
+                data.profile = lineProfile.displayName || $('#username').text().trim();
+                data.picture = lineProfile.pictureUrl || $('#userAvatar').attr('src');
 
                 Swal.fire({
                     iconHtml: '<i class="bi bi-hourglass-split text-danger"></i>',
