@@ -552,6 +552,9 @@
             let tempFiles = $('#temp-imgs')[0].files;
             let newFiles = Array.from(files);
             let allFiles = [...tempFiles, ...newFiles];
+            // The temporary input is the source of truth. Clearing the picker
+            // also lets a customer select the same file again after removing it.
+            e.target.value = '';
 
             // Check for duplicate files
             let fileNames = new Set();
@@ -607,7 +610,11 @@
         });
 
         function renderImagePreview(allFiles) {
-            $('#image-label').text('เลือกแล้ว (' + allFiles.length + ' รูป)');
+            $('#image-label').text(
+                allFiles.length
+                    ? 'เลือกแล้ว (' + allFiles.length + ' รูป)'
+                    : 'คลิกเพื่อเลือกรูปภาพ'
+            );
             $('.img-grid-col').empty();
             allFiles.forEach((file, i) => {
                 let eq = i % 3;
@@ -646,33 +653,20 @@
             });
         }
 
-        function submit() {
-            if ($('#image').val() == '') {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'กรุณาเลือกรูปภาพ',
-                    customClass: {
-                        icon: 'text-danger',
-                        title: 'text-danger',
-                        content: 'text-dark',
-                        popup: 'rounded-4'
-                    },
-                    confirmButtonText: 'ปิด',
-                    allowOutsideClick: false,
-                    allowEscapeKey: false,
-                    allowEnterKey: false,
-                })
-                return false;
-            }
-            uploadFiles().then((res) => {
+        async function submit() {
+            const submitButton = $('button[type="submit"]');
+            submitButton.prop('disabled', true);
+
+            try {
+                const fileIds = await uploadFiles();
                 let data = $('#mainform').serializeArray().reduce((obj, item) => {
                     obj[item.name] = item.value;
                     return obj;
-                }, { fileIds: res.join(','), opt: 'submit' });
+                }, { fileIds: fileIds.join(','), opt: 'submit' });
                 data.uid = liff.getDecodedIDToken().sub;
                 data.profile = $('#username').text().trim();
                 data.picture = $('#userAvatar').attr('src');
-                console.log(data);
+
                 Swal.fire({
                     iconHtml: '<i class="bi bi-hourglass-split text-danger"></i>',
                     title: 'กำลังส่งข้อมูล',
@@ -686,44 +680,61 @@
                     didOpen: () => {
                         Swal.showLoading()
                     },
-                })
-                $.post(scripturl, data, function (response) {
-                    success()
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'ส่งข้อมูลสำเร็จ',
-                        text: 'ขอบคุณที่ใช้บริการ',
-                        customClass: {
-                            icon: 'text-success',
-                            title: 'text-success',
-                            content: 'text-dark',
-                            popup: 'rounded-4'
-                        },
-                        confirmButtonText: 'ปิด',
-                        allowOutsideClick: false,
-                        allowEscapeKey: false,
-                        allowEnterKey: false,
-                    })
-                }).fail(function () {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'เกิดข้อผิดพลาด',
-                        text: 'กรุณาลองใหม่อีกครั้ง',
-                        customClass: {
-                            icon: 'text-danger',
-                            title: 'text-danger',
-                            content: 'text-dark',
-                            popup: 'rounded-4'
-                        },
-                        confirmButtonText: 'ปิด',
-                        allowOutsideClick: false,
-                        allowEscapeKey: false,
-                        allowEnterKey: false,
-                    })
                 });
-            });
+
+                await $.ajax({
+                    url: scripturl,
+                    type: 'POST',
+                    data,
+                    timeout: 30000
+                });
+
+                success();
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'ส่งข้อมูลสำเร็จ',
+                    text: 'ขอบคุณที่ใช้บริการ',
+                    customClass: {
+                        icon: 'text-success',
+                        title: 'text-success',
+                        content: 'text-dark',
+                        popup: 'rounded-4'
+                    },
+                    confirmButtonText: 'ปิด',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    allowEnterKey: false,
+                });
+            } catch (error) {
+                console.error('Submission failed:', error);
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'ส่งข้อมูลไม่สำเร็จ',
+                    text: error.message || 'กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่อีกครั้ง',
+                    customClass: {
+                        icon: 'text-danger',
+                        title: 'text-danger',
+                        content: 'text-dark',
+                        popup: 'rounded-4'
+                    },
+                    confirmButtonText: 'ลองใหม่',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    allowEnterKey: false,
+                });
+            } finally {
+                const confirmed = $('#pdpaConsent').is(':checked') &&
+                    $('#dataConfirm').is(':checked');
+                submitButton.prop('disabled', !confirmed);
+            }
         }
+
         async function uploadFiles() {
+            const files = [...document.getElementById('temp-imgs').files];
+            if (files.length === 0) {
+                throw new Error('กรุณาเลือกรูปภาพ');
+            }
+
             Swal.fire({
                 iconHtml: '<i class="bi bi-cloud-arrow-up-fill text-danger"></i>',
                 title: 'กำลังอัพโหลดไฟล์',
@@ -739,77 +750,88 @@
                 didOpen: () => {
                     Swal.showLoading()
                 },
-            })
-            const { token, folder_id } = await getDownloadToken();
-            const f = document.getElementById("temp-imgs");
-            if (f.files.length == 0) {
-                return false
+            });
+
+            const { token, folder_id: folderId } = await getDownloadToken();
+            if (!token || !folderId) {
+                throw new Error('ไม่สามารถรับสิทธิ์อัปโหลดได้');
             }
-            let file = await new Promise((resolve, reject) => {
-                let length = f.files.length;
-                let count = 0;
-                let uploadfiles = [];
-                [...f.files].forEach((file, i) => {
-                    let fr = new FileReader();
-                    fr.fileName = file.name;
-                    fr.fileSize = file.size;
-                    fr.fileType = file.type;
-                    fr.readAsArrayBuffer(file);
-                    fr.onload = e => {
-                        var id = "p" + ++i;
-                        var div = $("<div>", { class: 'col-12 text-truncate' });
-                        div.attr("id", id);
-                        $("#progress").append(div);
-                        $('#' + id).text('Initialising (' + fr.fileName + ')')
-                        const f = e.target;
-                        const resource = {
-                            fileName: f.fileName,
-                            fileSize: f.fileSize,
-                            fileType: f.fileType,
-                            fileBuffer: f.result,
+
+            return Promise.all(files.map((file, index) =>
+                uploadSingleFile(file, index, token, folderId)
+            ));
+        }
+
+        function uploadSingleFile(file, index, token, folderId) {
+            return new Promise((resolve, reject) => {
+                const progressId = 'p' + (index + 1);
+                const progress = $('<div>', {
+                    id: progressId,
+                    class: 'col-12 text-truncate'
+                });
+                $('#progress').append(progress);
+                progress.text('กำลังเตรียมอัปโหลด ' + file.name);
+
+                let settled = false;
+                const finish = (callback, value) => {
+                    if (settled) return;
+                    settled = true;
+                    clearTimeout(timeout);
+                    callback(value);
+                };
+                const timeout = setTimeout(() => {
+                    finish(reject, new Error('อัปโหลด ' + file.name + ' ใช้เวลานานเกินไป'));
+                }, 120000);
+
+                const reader = new FileReader();
+                reader.onerror = () => {
+                    finish(reject, new Error('ไม่สามารถอ่านไฟล์ ' + file.name));
+                };
+                reader.onload = event => {
+                    try {
+                        const uploader = new ResumableUploadToGoogleDrive();
+                        uploader.Do({
+                            fileName: file.name,
+                            fileSize: file.size,
+                            fileType: file.type,
+                            fileBuffer: event.target.result,
                             accessToken: token,
-                            folderId: folder_id,
-                            fields: "id",
-                        };
-                        const ru = new ResumableUploadToGoogleDrive();
-                        ru.Do(resource, function (res, err) {
-                            if (err) {
-                                console.log(err);
+                            folderId,
+                            fields: 'id',
+                        }, (response, error) => {
+                            if (error) {
+                                console.error('Upload failed:', error);
+                                finish(reject, new Error('อัปโหลด ' + file.name + ' ไม่สำเร็จ'));
                                 return;
                             }
-                            console.log(res);
-                            let msg = "";
-                            if (res.status == 'start' || res.status == 'getLocation' || res.status == 'initialize') {
-                                msg = '<i class="bi bi-cloud-arrow-up-fill"></i> กำลังเตรียมอัพโหลด ' + f.fileName;
-                            }
-                            else if (res.status == "Uploading") {
-                                msg =
-                                    '<i class="bi bi-hourglass-split text-start text-danger"></i> กำลังอัพโหลด ' +
-                                    Math.round(
-                                        (res.progressNumber.current / res.progressNumber.end) * 100
-                                    ) +
-                                    "% (" +
-                                    f.fileName +
-                                    ")";
-                            } else {
-                                msg = '<i class="bi bi-check-circle-fill text-start text-success"></i> อัพโหลดสำเร็จ  (' + f.fileName + ")";
+
+                            if (response.status === 'Uploading') {
+                                const percent = Math.round(
+                                    response.progressNumber.current /
+                                    response.progressNumber.end * 100
+                                );
+                                progress.text(
+                                    'กำลังอัปโหลด ' + file.name + ': ' + percent + '%'
+                                );
                             }
 
-                            // If you want to put the uploaded file information to the active Spreadsheet,
-                            // please use the following function.
-                            if (res.status == "Done") {
-                                uploadfiles.push(res.result.id);
-                                if (uploadfiles.length == length) {
-                                    resolve(uploadfiles);
+                            if (response.status === 'Done') {
+                                if (!response.result || !response.result.id) {
+                                    finish(reject, new Error(
+                                        'ไม่ได้รับรหัสไฟล์สำหรับ ' + file.name
+                                    ));
+                                    return;
                                 }
+                                progress.text('อัปโหลดสำเร็จ (' + file.name + ')');
+                                finish(resolve, response.result.id);
                             }
-
-                            $('#' + id).html(msg)
                         });
-                    };
-                });
+                    } catch (error) {
+                        finish(reject, error);
+                    }
+                };
+                reader.readAsArrayBuffer(file);
             });
-            return file;
         }
 
         function getDownloadToken() {
@@ -817,8 +839,8 @@
                 $.ajax({
                     url: scripturl + '?opt=token',
                     type: 'GET',
+                    timeout: 30000,
                     success: function (data) {
-                        console.log("🚀 ~ returnnewPromise ~ data:", data)
                         resolve(data);
                     },
                     error: function (error) {
@@ -868,7 +890,7 @@
         crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script
-        src="https://cdn.jsdelivr.net/gh/tanaikech/ResumableUploadForGoogleDrive_js@master/resumableupload_js.min.js"></script>
+        src="https://cdn.jsdelivr.net/gh/tanaikech/ResumableUploadForGoogleDrive_js@1d9de85731460df4770960b9283f756781dd59ce/resumableupload_js.min.js"></script>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <!-- <script src="https://unpkg.com/vconsole@latest/dist/vconsole.min.js">
     </script>
