@@ -474,22 +474,55 @@
     </template>
     <script>
         const scripturl = 'https://script.google.com/macros/s/AKfycbz5-_0D8_cNqfVK6MvfZw78cWPcqgn2pqBxRCcGYKK7HVzuslmqivD3NW1ToLRQtzI/exec'
+        function getDecodedLineIdentity() {
+            const decodedToken = liff.getDecodedIDToken() || {};
+            return {
+                userId: decodedToken.sub || '',
+                displayName: decodedToken.name || '',
+                pictureUrl: decodedToken.picture || ''
+            };
+        }
+
+        async function getLineIdentity() {
+            const fallbackIdentity = getDecodedLineIdentity();
+
+            try {
+                const profile = await liff.getProfile();
+                return {
+                    userId: profile.userId || fallbackIdentity.userId,
+                    displayName: profile.displayName || fallbackIdentity.displayName,
+                    pictureUrl: profile.pictureUrl || fallbackIdentity.pictureUrl
+                };
+            } catch (error) {
+                // The LIFF session may not include the optional profile scope.
+                // openid still provides a stable user ID through the ID token.
+                console.warn('LINE profile permission is unavailable; using ID token.', error);
+                return fallbackIdentity;
+            }
+        }
+
         $(document).ready(function () {
             liff.init({ liffId: '2010867828-Lr117QCo' })
 
-            liff.ready.then(() => {
+            liff.ready.then(async () => {
                 if (!liff.isLoggedIn()) {
                     liff.login();
                     return
                 }
-                liff.getProfile().then(profile => {
-                    $('#username').text(profile.displayName);
-                    $('#cus_name').val(profile.displayName);
-                    $('#userAvatar').attr('src', profile.pictureUrl);
+
+                const identity = await getLineIdentity();
+                if (identity.displayName) {
+                    $('#username').text(identity.displayName);
+                    $('#cus_name').val(identity.displayName);
+                }
+                if (identity.pictureUrl) {
+                    $('#userAvatar').attr('src', identity.pictureUrl);
                     setTimeout(() => {
                         $('#userAvatar').parents('.col-12').removeClass('d-none');
                     }, 1000);
-                })
+                }
+            }).catch(error => {
+                console.error('LIFF initialization failed:', error);
             })
         });
 
@@ -658,9 +691,8 @@
             submitButton.prop('disabled', true);
 
             try {
-                const lineProfile = await liff.getProfile();
-                const decodedToken = liff.getDecodedIDToken();
-                const lineUserId = lineProfile.userId || decodedToken?.sub;
+                const lineProfile = await getLineIdentity();
+                const lineUserId = lineProfile.userId;
                 if (!lineUserId) {
                     throw new Error('ไม่สามารถระบุบัญชี LINE ได้ กรุณาปิดและเปิดฟอร์มจาก LINE อีกครั้ง');
                 }
