@@ -474,8 +474,64 @@
     </template>
     <script>
         const scripturl = 'https://script.google.com/macros/s/AKfycbz5-_0D8_cNqfVK6MvfZw78cWPcqgn2pqBxRCcGYKK7HVzuslmqivD3NW1ToLRQtzI/exec'
+        const LIFF_ID = '2010867828-Lr117QCo';
+        const LIFF_SDK_URL = 'https://static.line-scdn.net/liff/edge/2/sdk.js';
+        let liffInitializationPromise = null;
+        let isLiffReady = false;
+
+        function updateSubmitButtonState() {
+            const confirmed = $('#pdpaConsent').is(':checked') &&
+                $('#dataConfirm').is(':checked');
+            $('button[type="submit"]').prop('disabled', !confirmed || !isLiffReady);
+        }
+
+        function loadLiffSdk(attempt) {
+            if (typeof window.liff !== 'undefined') {
+                return Promise.resolve();
+            }
+
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                const timeout = setTimeout(() => {
+                    script.remove();
+                    reject(new Error('LIFF SDK load timed out'));
+                }, 15000);
+
+                script.src = LIFF_SDK_URL + '?retry=' + attempt + '&t=' + Date.now();
+                script.async = true;
+                script.onload = () => {
+                    clearTimeout(timeout);
+                    if (typeof window.liff !== 'undefined') {
+                        resolve();
+                    } else {
+                        reject(new Error('LIFF SDK loaded without the LIFF API'));
+                    }
+                };
+                script.onerror = () => {
+                    clearTimeout(timeout);
+                    script.remove();
+                    reject(new Error('LIFF SDK failed to load'));
+                };
+                document.head.appendChild(script);
+            });
+        }
+
+        async function ensureLiffSdk() {
+            let lastError;
+            for (let attempt = 1; attempt <= 2; attempt++) {
+                try {
+                    await loadLiffSdk(attempt);
+                    return;
+                } catch (error) {
+                    lastError = error;
+                    console.warn('LIFF SDK load attempt failed:', attempt, error);
+                }
+            }
+            throw lastError || new Error('LIFF SDK is unavailable');
+        }
+
         function getDecodedLineIdentity() {
-            const decodedToken = liff.getDecodedIDToken() || {};
+            const decodedToken = window.liff.getDecodedIDToken() || {};
             return {
                 userId: decodedToken.sub || '',
                 displayName: decodedToken.name || '',
@@ -487,7 +543,7 @@
             const fallbackIdentity = getDecodedLineIdentity();
 
             try {
-                const profile = await liff.getProfile();
+                const profile = await window.liff.getProfile();
                 return {
                     userId: profile.userId || fallbackIdentity.userId,
                     displayName: profile.displayName || fallbackIdentity.displayName,
@@ -501,16 +557,45 @@
             }
         }
 
-        $(document).ready(function () {
-            liff.init({ liffId: '2010867828-Lr117QCo' })
+        function initializeLiff() {
+            if (liffInitializationPromise) {
+                return liffInitializationPromise;
+            }
 
-            liff.ready.then(async () => {
-                if (!liff.isLoggedIn()) {
-                    liff.login();
-                    return
+            liffInitializationPromise = (async () => {
+                await ensureLiffSdk();
+                await window.liff.init({ liffId: LIFF_ID });
+
+                if (!window.liff.isLoggedIn()) {
+                    window.liff.login();
+                    return null;
                 }
 
                 const identity = await getLineIdentity();
+                if (!identity.userId) {
+                    throw new Error('LINE identity is unavailable');
+                }
+
+                isLiffReady = true;
+                updateSubmitButtonState();
+                return identity;
+            })().catch(error => {
+                isLiffReady = false;
+                liffInitializationPromise = null;
+                updateSubmitButtonState();
+                throw error;
+            });
+
+            return liffInitializationPromise;
+        }
+
+        $(document).ready(async function () {
+            updateSubmitButtonState();
+
+            try {
+                const identity = await initializeLiff();
+                if (!identity) return;
+
                 if (identity.displayName) {
                     $('#username').text(identity.displayName);
                     $('#cus_name').val(identity.displayName);
@@ -521,9 +606,19 @@
                         $('#userAvatar').parents('.col-12').removeClass('d-none');
                     }, 1000);
                 }
-            }).catch(error => {
+            } catch (error) {
                 console.error('LIFF initialization failed:', error);
-            })
+                const result = await Swal.fire({
+                    icon: 'error',
+                    title: 'ไม่สามารถเชื่อมต่อระบบ LINE ได้',
+                    text: 'กรุณาตรวจสอบอินเทอร์เน็ต แล้วปิดและเปิดแบบฟอร์มใหม่อีกครั้ง',
+                    confirmButtonText: 'โหลดใหม่',
+                    allowOutsideClick: false
+                });
+                if (result.isConfirmed) {
+                    window.location.reload();
+                }
+            }
         });
 
         $('#phone').on('input', function () {
@@ -568,11 +663,7 @@
         });
 
         $('#pdpaConsent, #dataConfirm').change(function () {
-            if ($('#pdpaConsent').is(':checked') && $('#dataConfirm').is(':checked')) {
-                $('button[type="submit"]').prop('disabled', false);
-            } else {
-                $('button[type="submit"]').prop('disabled', true);
-            }
+            updateSubmitButtonState();
         });
 
         $('#image-label').click(function () {
@@ -691,6 +782,10 @@
             submitButton.prop('disabled', true);
 
             try {
+                if (!isLiffReady || typeof window.liff === 'undefined') {
+                    throw new Error('ระบบ LINE ยังไม่พร้อม กรุณาปิดและเปิดแบบฟอร์มใหม่อีกครั้ง');
+                }
+
                 const lineProfile = await getLineIdentity();
                 const lineUserId = lineProfile.userId;
                 if (!lineUserId) {
@@ -762,9 +857,7 @@
                     allowEnterKey: false,
                 });
             } finally {
-                const confirmed = $('#pdpaConsent').is(':checked') &&
-                    $('#dataConfirm').is(':checked');
-                submitButton.prop('disabled', !confirmed);
+                updateSubmitButtonState();
             }
         }
 
@@ -930,7 +1023,6 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script
         src="https://cdn.jsdelivr.net/gh/tanaikech/ResumableUploadForGoogleDrive_js@1d9de85731460df4770960b9283f756781dd59ce/resumableupload_js.min.js"></script>
-    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <!-- <script src="https://unpkg.com/vconsole@latest/dist/vconsole.min.js">
     </script>
     <script> // VConsole will be exported to `window.VConsole` by default.
