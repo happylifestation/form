@@ -28,22 +28,33 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --gift-rose: #d84c72;
+            --gift-rose-dark: #9f264d;
+            --gift-peach: #ffb49c;
+            --gift-cream: #fffaf3;
+            --gift-lilac: #eee5ff;
+            --gift-ink: #402d3a;
+        }
+
         body {
             min-height: 100vh;
             background:
-                radial-gradient(circle at 10% 0%, rgba(220, 53, 69, .14), transparent 24rem),
-                linear-gradient(180deg, #fff7f4 0%, #f4f7fb 100%);
-            color: #263342;
+                radial-gradient(circle at 8% 4%, rgba(255, 180, 156, .35), transparent 22rem),
+                radial-gradient(circle at 94% 18%, rgba(199, 174, 255, .26), transparent 20rem),
+                linear-gradient(180deg, #fff9f4 0%, #fff4f7 48%, #f8f2ff 100%);
+            color: var(--gift-ink);
         }
 
         .navbar {
-            border-bottom: 1px solid rgba(220, 53, 69, .12);
-            background: rgba(255, 255, 255, .9) !important;
+            border-bottom: 1px solid rgba(216, 76, 114, .14);
+            background: rgba(255, 250, 247, .92) !important;
             backdrop-filter: blur(14px);
+            box-shadow: 0 5px 20px rgba(120, 59, 80, .06);
         }
 
         .text-red {
-            color: #dc3545;
+            color: var(--gift-rose);
         }
 
         .container {
@@ -51,9 +62,10 @@
         }
 
         .brand-mark {
-            width: 46px;
-            height: 46px;
+            width: 50px;
+            height: 50px;
             object-fit: contain;
+            filter: drop-shadow(0 5px 8px rgba(216, 76, 114, .14));
         }
 
         .brand-copy {
@@ -62,7 +74,7 @@
 
         .brand-copy strong {
             display: block;
-            color: #202a35;
+            color: var(--gift-ink);
             font-size: .98rem;
             font-weight: 800;
         }
@@ -74,16 +86,31 @@
         }
 
         .hero-panel {
+            position: relative;
+            overflow: hidden;
             margin-top: 20px;
-            padding: 22px 20px;
-            border: 1px solid rgba(220, 53, 69, .14);
-            border-radius: 16px;
-            background: rgba(255, 255, 255, .9);
-            box-shadow: 0 18px 46px rgba(34, 46, 60, .08);
+            padding: 28px 24px;
+            border: 1px solid rgba(216, 76, 114, .16);
+            border-radius: 24px;
+            background:
+                radial-gradient(circle at 91% 15%, rgba(255,255,255,.9) 0 5px, transparent 6px),
+                radial-gradient(circle at 84% 30%, rgba(255,255,255,.75) 0 3px, transparent 4px),
+                linear-gradient(135deg, rgba(255, 240, 231, .98), rgba(255, 231, 240, .96) 55%, rgba(238, 229, 255, .96));
+            box-shadow: 0 20px 50px rgba(142, 70, 96, .12);
+        }
+
+        .hero-panel::after {
+            content: '🎁';
+            position: absolute;
+            right: 22px;
+            top: 17px;
+            font-size: 3.4rem;
+            opacity: .18;
+            transform: rotate(8deg);
         }
 
         .hero-panel .eyebrow {
-            color: #b4232f;
+            color: var(--gift-rose-dark);
             font-size: .78rem;
             font-weight: 800;
             letter-spacing: .04em;
@@ -92,7 +119,7 @@
 
         .hero-panel h1 {
             margin: 6px 0 8px;
-            color: #202a35;
+            color: var(--gift-ink);
             font-size: clamp(1.45rem, 5vw, 2rem);
             font-weight: 800;
             letter-spacing: 0;
@@ -106,14 +133,31 @@
             line-height: 1.65;
         }
 
+        .gift-promise {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .gift-promise span {
+            padding: 6px 10px;
+            border: 1px solid rgba(216, 76, 114, .13);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, .72);
+            color: #704358;
+            font-size: .78rem;
+            font-weight: 700;
+        }
+
         .form-card {
             margin-top: 16px;
             margin-bottom: 48px;
             padding: 20px;
-            border: 1px solid #e1e7ef;
-            border-radius: 16px;
-            background: rgba(255, 255, 255, .96);
-            box-shadow: 0 18px 46px rgba(34, 46, 60, .08);
+            border: 1px solid rgba(216, 76, 114, .12);
+            border-radius: 24px;
+            background: rgba(255, 253, 251, .97);
+            box-shadow: 0 20px 54px rgba(100, 58, 78, .1);
         }
 
         .section-heading {
@@ -123,7 +167,7 @@
             margin: 8px 0 2px;
             padding: 14px 0 4px;
             border-top: 1px solid #edf1f5;
-            color: #202a35;
+            color: var(--gift-ink);
             font-size: 1.02rem;
             font-weight: 800;
         }
@@ -139,32 +183,34 @@
             width: 34px;
             height: 34px;
             place-items: center;
-            border-radius: 10px;
-            color: #dc3545;
-            background: #fff1f1;
+            border-radius: 12px;
+            color: var(--gift-rose-dark);
+            background: linear-gradient(135deg, #ffe7ed, var(--gift-lilac));
+            box-shadow: inset 0 0 0 1px rgba(216, 76, 114, .08);
         }
 
         label {
             margin-bottom: 7px;
-            color: #263342;
+            color: var(--gift-ink);
             font-weight: 700;
         }
 
         .form-control,
         .form-select {
             min-height: 46px;
-            border-color: #ccd5df;
-            border-radius: 12px !important;
+            border-color: #ddced6;
+            border-radius: 14px !important;
+            background-color: #fffefd;
         }
 
         .form-control:focus,
         .form-select:focus {
-            border-color: #dc3545;
-            box-shadow: 0 0 0 .22rem rgba(220, 53, 69, .16);
+            border-color: var(--gift-rose);
+            box-shadow: 0 0 0 .22rem rgba(216, 76, 114, .14);
         }
 
         .alert {
-            border-radius: 12px;
+            border-radius: 14px;
         }
 
         .alert-warning {
@@ -183,26 +229,26 @@
             display: grid;
             min-height: 96px;
             place-items: center;
-            border: 2px dashed #f1a3aa !important;
-            border-radius: 14px !important;
-            background: #fff6f7 !important;
-            color: #b4232f;
+            border: 2px dashed #e99ab0 !important;
+            border-radius: 18px !important;
+            background: linear-gradient(135deg, #fff8f3, #fff0f5) !important;
+            color: var(--gift-rose-dark);
             font-weight: 800;
             transition: .16s ease;
         }
 
         #image-label:hover {
-            border-color: #dc3545 !important;
-            background: #fff0f2 !important;
+            border-color: var(--gift-rose) !important;
+            background: #ffeaf0 !important;
         }
 
         .btn-danger {
             min-height: 52px;
             border: 0;
-            border-radius: 12px !important;
-            background: #dc3545;
+            border-radius: 16px !important;
+            background: linear-gradient(135deg, #d94770, #bd3d75);
             font-weight: 800;
-            box-shadow: 0 10px 24px rgba(220, 53, 69, .22);
+            box-shadow: 0 12px 26px rgba(190, 61, 117, .26);
         }
 
         .btn-danger:disabled {
@@ -237,7 +283,7 @@
 
             .hero-panel,
             .form-card {
-                border-radius: 14px;
+                border-radius: 20px;
             }
 
             .form-card {
@@ -267,6 +313,11 @@
                 <div class="eyebrow">Customer Submission</div>
                 <h1>แบบฟอร์มส่งรายละเอียดสั่งสินค้า</h1>
                 <p>กรอกข้อมูลออเดอร์ รายละเอียดงาน และอัปโหลดรูปตามจำนวนที่แบบสินค้ารองรับ เพื่อให้ทีมงานจัดทำงานได้ถูกต้อง</p>
+                <div class="gift-promise" aria-label="จุดเด่นของบริการ">
+                    <span>💝 ตั้งใจทำทุกชิ้น</span>
+                    <span>✨ เก็บทุกความทรงจำ</span>
+                    <span>🎀 ของขวัญที่มีชิ้นเดียว</span>
+                </div>
             </div>
         </div>
         <main>
