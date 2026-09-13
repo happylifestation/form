@@ -345,6 +345,17 @@
                             กรุณากรอกเบอร์โทรศัพท์ให้ถูกต้อง
                         </div>
                     </div>
+                    <div class="col-12">
+                        <label for="useDate">
+                            <i class="bi bi-calendar-event-fill text-red"></i>
+                            วันที่ต้องการใช้งาน <span class="text-danger">*</span>
+                        </label>
+                        <input type="date" class="form-control rounded-3" id="useDate" name="useDate" required>
+                        <div class="form-text">กรุณาเลือกวันที่ลูกค้าต้องการนำสินค้าไปใช้งาน</div>
+                        <div class="invalid-feedback">
+                            กรุณาเลือกวันที่ต้องการใช้งาน
+                        </div>
+                    </div>
                     <div class="col-12 d-none">
                         <label for="address">
                             <i class="bi bi-house-fill text-red"></i>
@@ -409,7 +420,6 @@
                         </div>
                         <input type="file" class="form-control rounded-3" id="image" name="image" accept="image/*"
                             multiple hidden>
-                        <input type="file" name="temp-imgs" id="temp-imgs" class="d-none" multiple hidden>
                         </label>
                     </div>
                     <div class="col-12">
@@ -478,6 +488,7 @@
         const LIFF_SDK_URL = 'https://static.line-scdn.net/liff/edge/2/sdk.js';
         let liffInitializationPromise = null;
         let isLiffReady = false;
+        let selectedImages = [];
 
         function updateSubmitButtonState() {
             const confirmed = $('#pdpaConsent').is(':checked') &&
@@ -591,6 +602,10 @@
 
         $(document).ready(async function () {
             updateSubmitButtonState();
+            const today = new Date();
+            const localToday = new Date(today.getTime() - today.getTimezoneOffset() * 60000)
+                .toISOString().split('T')[0];
+            $('#useDate').attr('min', localToday);
 
             try {
                 const identity = await initializeLiff();
@@ -670,28 +685,11 @@
             $('#image').click();
         });
 
-        $('#image').change(function (e) {
-
-            let files = e.target.files;
-            let tempFiles = $('#temp-imgs')[0].files;
-            let newFiles = Array.from(files);
-            let allFiles = [...tempFiles, ...newFiles];
-            // The temporary input is the source of truth. Clearing the picker
-            // also lets a customer select the same file again after removing it.
+        $('#image').change(async function (e) {
+            const newFiles = Array.from(e.target.files || []);
             e.target.value = '';
 
-            // Check for duplicate files
-            let fileNames = new Set();
-            allFiles = allFiles.filter(file => {
-                if (fileNames.has(file.name)) {
-                    return false;
-                } else {
-                    fileNames.add(file.name);
-                    return true;
-                }
-            });
-
-            if (allFiles.length > 8) {
+            if (selectedImages.length + newFiles.length > 8) {
                 Swal.fire({
                     icon: 'error',
                     title: 'จำนวนรูปเกินกว่าที่ระบบรับได้ กรุณาใส่รูปตามจำนวนที่แบบของคุณรองรับ',
@@ -724,57 +722,88 @@
                 },
             })
 
-            let datatransfer = new DataTransfer();
-            allFiles.forEach(file => {
-                datatransfer.items.add(file);
-            });
-            $('#temp-imgs')[0].files = datatransfer.files;
+            try {
+                for (const file of newFiles) {
+                    const fileKey = [file.name, file.size, file.lastModified].join(':');
+                    if (selectedImages.some(image => image.key === fileKey)) continue;
 
-            renderImagePreview(allFiles);
+                    const fileBuffer = await readFileCopy(file);
+                    const previewBlob = new Blob([fileBuffer], {
+                        type: file.type || 'application/octet-stream'
+                    });
+                    selectedImages.push({
+                        id: (window.crypto && window.crypto.randomUUID)
+                            ? window.crypto.randomUUID()
+                            : Date.now() + '-' + Math.random().toString(16).slice(2),
+                        key: fileKey,
+                        name: file.name,
+                        size: file.size,
+                        type: file.type,
+                        lastModified: file.lastModified,
+                        fileBuffer,
+                        previewUrl: URL.createObjectURL(previewBlob)
+                    });
+                }
+                renderImagePreview();
+            } catch (error) {
+                console.error('Unable to cache selected image:', error);
+                renderImagePreview();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ไม่สามารถอ่านรูปภาพได้',
+                    text: 'กรุณาเลือกรูปใหม่อีกครั้ง',
+                    confirmButtonText: 'ปิด',
+                    allowOutsideClick: false
+                });
+            }
         });
 
-        function renderImagePreview(allFiles) {
+        function readFileCopy(file) {
+            if (typeof file.arrayBuffer === 'function') {
+                return file.arrayBuffer();
+            }
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = event => resolve(event.target.result);
+                reader.onerror = () => reject(new Error('Unable to read ' + file.name));
+                reader.onabort = () => reject(new Error('Reading was cancelled for ' + file.name));
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        function renderImagePreview() {
             $('#image-label').text(
-                allFiles.length
-                    ? 'เลือกแล้ว (' + allFiles.length + ' รูป)'
+                selectedImages.length
+                    ? 'เลือกแล้ว (' + selectedImages.length + ' รูป)'
                     : 'คลิกเพื่อเลือกรูปภาพ'
             );
             $('.img-grid-col').empty();
-            allFiles.forEach((file, i) => {
+            selectedImages.forEach((image, i) => {
                 let eq = i % 3;
-                let reader = new FileReader();
-                reader.onload = function (e) {
-                    let img = $($('#img-template').html());
-                    img.find('img').attr('src', e.target.result);
-                    img.find('span').on('click', function () {
-                        let datatransfer = new DataTransfer();
-                        let files = $('#temp-imgs')[0].files;
-                        for (let i = 0; i < files.length; i++) {
-                            if (files[i].name != file.name) {
-                                datatransfer.items.add(files[i]);
-                            }
-                        }
-                        $('#temp-imgs')[0].files = datatransfer.files;
-                        renderImagePreview([...datatransfer.files]);
+                let img = $($('#img-template').html());
+                img.find('img').attr('src', image.previewUrl);
+                img.find('span').on('click', function () {
+                    URL.revokeObjectURL(image.previewUrl);
+                    image.fileBuffer = null;
+                    selectedImages = selectedImages.filter(item => item.id !== image.id);
+                    renderImagePreview();
+                });
+                img.find('img').on('click', function () {
+                    Swal.fire({
+                        imageUrl: image.previewUrl,
+                        imageWidth: '100%',
+                        imageHeight: '100%',
+                        showCloseButton: true,
+                        showConfirmButton: false,
+                        allowOutsideClick: false
                     });
-                    img.find('img').on('click', function () {
-                        Swal.fire({
-                            imageUrl: e.target.result,
-                            imageWidth: '100%',
-                            imageHeight: '100%',
-                            showCloseButton: true,
-                            showConfirmButton: false,
-                            allowOutsideClick: false
-                        });
-                    });
-                    let div = $('.img-grid-col').eq(eq)
-                    div.append(img)
-                    if (i == allFiles.length - 1) {
-                        Swal.close();
-                    }
+                });
+                $('.img-grid-col').eq(eq).append(img);
+                if (i === selectedImages.length - 1) {
+                    Swal.close();
                 }
-                reader.readAsDataURL(file);
             });
+            if (selectedImages.length === 0) Swal.close();
         }
 
         async function submit() {
@@ -862,8 +891,7 @@
         }
 
         async function uploadFiles() {
-            const files = [...document.getElementById('temp-imgs').files];
-            if (files.length === 0) {
+            if (selectedImages.length === 0) {
                 throw new Error('กรุณาเลือกรูปภาพ');
             }
 
@@ -889,12 +917,12 @@
                 throw new Error('ไม่สามารถรับสิทธิ์อัปโหลดได้');
             }
 
-            return Promise.all(files.map((file, index) =>
-                uploadSingleFile(file, index, token, folderId)
+            return Promise.all(selectedImages.map((image, index) =>
+                uploadSingleFile(image, index, token, folderId)
             ));
         }
 
-        function uploadSingleFile(file, index, token, folderId) {
+        function uploadSingleFile(image, index, token, folderId) {
             return new Promise((resolve, reject) => {
                 const progressId = 'p' + (index + 1);
                 const progress = $('<div>', {
@@ -902,7 +930,7 @@
                     class: 'col-12 text-truncate'
                 });
                 $('#progress').append(progress);
-                progress.text('กำลังเตรียมอัปโหลด ' + file.name);
+                progress.text('กำลังเตรียมอัปโหลด ' + image.name);
 
                 let settled = false;
                 const finish = (callback, value) => {
@@ -912,28 +940,23 @@
                     callback(value);
                 };
                 const timeout = setTimeout(() => {
-                    finish(reject, new Error('อัปโหลด ' + file.name + ' ใช้เวลานานเกินไป'));
+                    finish(reject, new Error('อัปโหลด ' + image.name + ' ใช้เวลานานเกินไป'));
                 }, 120000);
 
-                const reader = new FileReader();
-                reader.onerror = () => {
-                    finish(reject, new Error('ไม่สามารถอ่านไฟล์ ' + file.name));
-                };
-                reader.onload = event => {
-                    try {
-                        const uploader = new ResumableUploadToGoogleDrive();
-                        uploader.Do({
-                            fileName: file.name,
-                            fileSize: file.size,
-                            fileType: file.type,
-                            fileBuffer: event.target.result,
+                try {
+                    const uploader = new ResumableUploadToGoogleDrive();
+                    uploader.Do({
+                            fileName: image.name,
+                            fileSize: image.size,
+                            fileType: image.type,
+                            fileBuffer: image.fileBuffer,
                             accessToken: token,
                             folderId,
                             fields: 'id',
                         }, (response, error) => {
                             if (error) {
                                 console.error('Upload failed:', error);
-                                finish(reject, new Error('อัปโหลด ' + file.name + ' ไม่สำเร็จ'));
+                                finish(reject, new Error('อัปโหลด ' + image.name + ' ไม่สำเร็จ'));
                                 return;
                             }
 
@@ -943,26 +966,24 @@
                                     response.progressNumber.end * 100
                                 );
                                 progress.text(
-                                    'กำลังอัปโหลด ' + file.name + ': ' + percent + '%'
+                                    'กำลังอัปโหลด ' + image.name + ': ' + percent + '%'
                                 );
                             }
 
                             if (response.status === 'Done') {
                                 if (!response.result || !response.result.id) {
                                     finish(reject, new Error(
-                                        'ไม่ได้รับรหัสไฟล์สำหรับ ' + file.name
+                                        'ไม่ได้รับรหัสไฟล์สำหรับ ' + image.name
                                     ));
                                     return;
                                 }
-                                progress.text('อัปโหลดสำเร็จ (' + file.name + ')');
+                                progress.text('อัปโหลดสำเร็จ (' + image.name + ')');
                                 finish(resolve, response.result.id);
                             }
                         });
-                    } catch (error) {
-                        finish(reject, error);
-                    }
-                };
-                reader.readAsArrayBuffer(file);
+                } catch (error) {
+                    finish(reject, error);
+                }
             });
         }
 
@@ -983,6 +1004,11 @@
         }
 
         function success() {
+            selectedImages.forEach(image => {
+                URL.revokeObjectURL(image.previewUrl);
+                image.fileBuffer = null;
+            });
+            selectedImages = [];
             $('main').html('')
             $('main').append(`
             <div class="row">
