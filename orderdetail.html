@@ -977,9 +977,6 @@
             return $('<div>').text(value).html();
         }
 
-        const MAX_CONCURRENT_UPLOADS = 3;
-        const MAX_UPLOAD_ATTEMPTS = 3;
-
         async function uploadFiles() {
             if (selectedImages.length === 0) {
                 throw new Error('กรุณาเลือกรูปภาพ');
@@ -1002,70 +999,17 @@
                 },
             });
 
-            let { token, folder_id: folderId } = await getDownloadToken();
+            const { token, folder_id: folderId } = await getDownloadToken();
             if (!token || !folderId) {
                 throw new Error('ไม่สามารถรับสิทธิ์อัปโหลดได้');
             }
 
-            const fileIds = new Array(selectedImages.length);
-
-            for (let start = 0; start < selectedImages.length; start += MAX_CONCURRENT_UPLOADS) {
-                let pending = selectedImages
-                    .slice(start, start + MAX_CONCURRENT_UPLOADS)
-                    .map((image, offset) => ({ image, index: start + offset }));
-
-                for (let attempt = 1;
-                    pending.length > 0 && attempt <= MAX_UPLOAD_ATTEMPTS;
-                    attempt++) {
-                    if (attempt > 1) {
-                        await waitBeforeRetry(attempt);
-                        const refreshedAuth = await getDownloadToken();
-                        token = refreshedAuth.token;
-                        folderId = refreshedAuth.folder_id;
-                        if (!token || !folderId) {
-                            throw new Error('ไม่สามารถต่ออายุสิทธิ์อัปโหลดได้');
-                        }
-                    }
-
-                    const results = await Promise.allSettled(pending.map(item =>
-                        uploadSingleFile(
-                            item.image,
-                            item.index,
-                            token,
-                            folderId,
-                            attempt
-                        )
-                    ));
-                    const failed = [];
-
-                    results.forEach((result, resultIndex) => {
-                        const item = pending[resultIndex];
-                        if (result.status === 'fulfilled') {
-                            fileIds[item.index] = result.value;
-                        } else {
-                            failed.push(item);
-                        }
-                    });
-
-                    pending = failed;
-                }
-
-                if (pending.length > 0) {
-                    throw new Error(
-                        'อัปโหลด ' + pending.map(item => item.image.name).join(', ') +
-                        ' ไม่สำเร็จหลังลอง ' + MAX_UPLOAD_ATTEMPTS + ' ครั้ง'
-                    );
-                }
-            }
-
-            return fileIds;
+            return Promise.all(selectedImages.map((image, index) =>
+                uploadSingleFile(image, index, token, folderId)
+            ));
         }
 
-        function waitBeforeRetry(attempt) {
-            return new Promise(resolve => setTimeout(resolve, 1000 * attempt));
-        }
-
-        function uploadSingleFile(image, index, token, folderId, attempt) {
+        function uploadSingleFile(image, index, token, folderId) {
             return new Promise((resolve, reject) => {
                 const progressId = 'p' + (index + 1);
                 let progress = $('#' + progressId);
@@ -1076,10 +1020,7 @@
                     });
                     $('#progress').append(progress);
                 }
-                progress.text(
-                    (attempt > 1 ? 'กำลังลองใหม่ครั้งที่ ' + attempt + ': ' :
-                        'กำลังเตรียมอัปโหลด ') + image.name
-                );
+                progress.text('กำลังเตรียมอัปโหลด ' + image.name);
 
                 let settled = false;
                 const finish = (callback, value) => {
