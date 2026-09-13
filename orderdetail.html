@@ -28,22 +28,33 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --gift-rose: #d84c72;
+            --gift-rose-dark: #9f264d;
+            --gift-peach: #ffb49c;
+            --gift-cream: #fffaf3;
+            --gift-lilac: #eee5ff;
+            --gift-ink: #402d3a;
+        }
+
         body {
             min-height: 100vh;
             background:
-                radial-gradient(circle at 10% 0%, rgba(220, 53, 69, .14), transparent 24rem),
-                linear-gradient(180deg, #fff7f4 0%, #f4f7fb 100%);
-            color: #263342;
+                radial-gradient(circle at 8% 4%, rgba(255, 180, 156, .35), transparent 22rem),
+                radial-gradient(circle at 94% 18%, rgba(199, 174, 255, .26), transparent 20rem),
+                linear-gradient(180deg, #fff9f4 0%, #fff4f7 48%, #f8f2ff 100%);
+            color: var(--gift-ink);
         }
 
         .navbar {
-            border-bottom: 1px solid rgba(220, 53, 69, .12);
-            background: rgba(255, 255, 255, .9) !important;
+            border-bottom: 1px solid rgba(216, 76, 114, .14);
+            background: rgba(255, 250, 247, .92) !important;
             backdrop-filter: blur(14px);
+            box-shadow: 0 5px 20px rgba(120, 59, 80, .06);
         }
 
         .text-red {
-            color: #dc3545;
+            color: var(--gift-rose);
         }
 
         .container {
@@ -51,9 +62,10 @@
         }
 
         .brand-mark {
-            width: 46px;
-            height: 46px;
+            width: 50px;
+            height: 50px;
             object-fit: contain;
+            filter: drop-shadow(0 5px 8px rgba(216, 76, 114, .14));
         }
 
         .brand-copy {
@@ -62,7 +74,7 @@
 
         .brand-copy strong {
             display: block;
-            color: #202a35;
+            color: var(--gift-ink);
             font-size: .98rem;
             font-weight: 800;
         }
@@ -74,16 +86,31 @@
         }
 
         .hero-panel {
+            position: relative;
+            overflow: hidden;
             margin-top: 20px;
-            padding: 22px 20px;
-            border: 1px solid rgba(220, 53, 69, .14);
-            border-radius: 16px;
-            background: rgba(255, 255, 255, .9);
-            box-shadow: 0 18px 46px rgba(34, 46, 60, .08);
+            padding: 28px 24px;
+            border: 1px solid rgba(216, 76, 114, .16);
+            border-radius: 24px;
+            background:
+                radial-gradient(circle at 91% 15%, rgba(255,255,255,.9) 0 5px, transparent 6px),
+                radial-gradient(circle at 84% 30%, rgba(255,255,255,.75) 0 3px, transparent 4px),
+                linear-gradient(135deg, rgba(255, 240, 231, .98), rgba(255, 231, 240, .96) 55%, rgba(238, 229, 255, .96));
+            box-shadow: 0 20px 50px rgba(142, 70, 96, .12);
+        }
+
+        .hero-panel::after {
+            content: '🎁';
+            position: absolute;
+            right: 22px;
+            top: 17px;
+            font-size: 3.4rem;
+            opacity: .18;
+            transform: rotate(8deg);
         }
 
         .hero-panel .eyebrow {
-            color: #b4232f;
+            color: var(--gift-rose-dark);
             font-size: .78rem;
             font-weight: 800;
             letter-spacing: .04em;
@@ -92,7 +119,7 @@
 
         .hero-panel h1 {
             margin: 6px 0 8px;
-            color: #202a35;
+            color: var(--gift-ink);
             font-size: clamp(1.45rem, 5vw, 2rem);
             font-weight: 800;
             letter-spacing: 0;
@@ -106,14 +133,31 @@
             line-height: 1.65;
         }
 
+        .gift-promise {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .gift-promise span {
+            padding: 6px 10px;
+            border: 1px solid rgba(216, 76, 114, .13);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, .72);
+            color: #704358;
+            font-size: .78rem;
+            font-weight: 700;
+        }
+
         .form-card {
             margin-top: 16px;
             margin-bottom: 48px;
             padding: 20px;
-            border: 1px solid #e1e7ef;
-            border-radius: 16px;
-            background: rgba(255, 255, 255, .96);
-            box-shadow: 0 18px 46px rgba(34, 46, 60, .08);
+            border: 1px solid rgba(216, 76, 114, .12);
+            border-radius: 24px;
+            background: rgba(255, 253, 251, .97);
+            box-shadow: 0 20px 54px rgba(100, 58, 78, .1);
         }
 
         .section-heading {
@@ -123,7 +167,7 @@
             margin: 8px 0 2px;
             padding: 14px 0 4px;
             border-top: 1px solid #edf1f5;
-            color: #202a35;
+            color: var(--gift-ink);
             font-size: 1.02rem;
             font-weight: 800;
         }
@@ -139,32 +183,34 @@
             width: 34px;
             height: 34px;
             place-items: center;
-            border-radius: 10px;
-            color: #dc3545;
-            background: #fff1f1;
+            border-radius: 12px;
+            color: var(--gift-rose-dark);
+            background: linear-gradient(135deg, #ffe7ed, var(--gift-lilac));
+            box-shadow: inset 0 0 0 1px rgba(216, 76, 114, .08);
         }
 
         label {
             margin-bottom: 7px;
-            color: #263342;
+            color: var(--gift-ink);
             font-weight: 700;
         }
 
         .form-control,
         .form-select {
             min-height: 46px;
-            border-color: #ccd5df;
-            border-radius: 12px !important;
+            border-color: #ddced6;
+            border-radius: 14px !important;
+            background-color: #fffefd;
         }
 
         .form-control:focus,
         .form-select:focus {
-            border-color: #dc3545;
-            box-shadow: 0 0 0 .22rem rgba(220, 53, 69, .16);
+            border-color: var(--gift-rose);
+            box-shadow: 0 0 0 .22rem rgba(216, 76, 114, .14);
         }
 
         .alert {
-            border-radius: 12px;
+            border-radius: 14px;
         }
 
         .alert-warning {
@@ -183,26 +229,26 @@
             display: grid;
             min-height: 96px;
             place-items: center;
-            border: 2px dashed #f1a3aa !important;
-            border-radius: 14px !important;
-            background: #fff6f7 !important;
-            color: #b4232f;
+            border: 2px dashed #e99ab0 !important;
+            border-radius: 18px !important;
+            background: linear-gradient(135deg, #fff8f3, #fff0f5) !important;
+            color: var(--gift-rose-dark);
             font-weight: 800;
             transition: .16s ease;
         }
 
         #image-label:hover {
-            border-color: #dc3545 !important;
-            background: #fff0f2 !important;
+            border-color: var(--gift-rose) !important;
+            background: #ffeaf0 !important;
         }
 
         .btn-danger {
             min-height: 52px;
             border: 0;
-            border-radius: 12px !important;
-            background: #dc3545;
+            border-radius: 16px !important;
+            background: linear-gradient(135deg, #d94770, #bd3d75);
             font-weight: 800;
-            box-shadow: 0 10px 24px rgba(220, 53, 69, .22);
+            box-shadow: 0 12px 26px rgba(190, 61, 117, .26);
         }
 
         .btn-danger:disabled {
@@ -237,7 +283,7 @@
 
             .hero-panel,
             .form-card {
-                border-radius: 14px;
+                border-radius: 20px;
             }
 
             .form-card {
@@ -267,6 +313,11 @@
                 <div class="eyebrow">Customer Submission</div>
                 <h1>แบบฟอร์มส่งรายละเอียดสั่งสินค้า</h1>
                 <p>กรอกข้อมูลออเดอร์ รายละเอียดงาน และอัปโหลดรูปตามจำนวนที่แบบสินค้ารองรับ เพื่อให้ทีมงานจัดทำงานได้ถูกต้อง</p>
+                <div class="gift-promise" aria-label="จุดเด่นของบริการ">
+                    <span>💝 ตั้งใจทำทุกชิ้น</span>
+                    <span>✨ เก็บทุกความทรงจำ</span>
+                    <span>🎀 ของขวัญที่มีชิ้นเดียว</span>
+                </div>
             </div>
         </div>
         <main>
@@ -345,6 +396,17 @@
                             กรุณากรอกเบอร์โทรศัพท์ให้ถูกต้อง
                         </div>
                     </div>
+                    <div class="col-12">
+                        <label for="useDate">
+                            <i class="bi bi-calendar-event-fill text-red"></i>
+                            วันที่ลูกค้าต้องใช้สินค้า <span class="text-danger">*</span>
+                        </label>
+                        <input type="date" class="form-control rounded-3" id="useDate" name="useDate" required>
+                        <div class="form-text">กรุณาเลือกวันที่ลูกค้าต้องใช้สินค้า</div>
+                        <div class="invalid-feedback">
+                            กรุณาเลือกวันที่ลูกค้าต้องใช้สินค้า
+                        </div>
+                    </div>
                     <div class="col-12 d-none">
                         <label for="address">
                             <i class="bi bi-house-fill text-red"></i>
@@ -370,19 +432,23 @@
                         </div>
                     </div>
                     <div class="col-12">
-                        <label for="detail">
+                        <label for="musiclink">
                             <i class="bi bi-file-music-fill text-red"></i>
                             ลิงค์เพลงจาก Youtube / Spotify <span class="text-muted">(เฉพาะแบบที่รองรับเพลง)</span>
-                            <br><small class="text-danger fw-bold">
-                                ** กรุณาใส่ลิงค์เพลงเฉพาะกรณีที่แบบสินค้าที่สั่งรองรับเพลงเท่านั้น
-                            </small>
-                            <br><small class="text-muted">
-                                ** หากแบบที่เลือกไม่รองรับเพลง ทางร้านจะไม่สามารถใส่เพลงในงานได้ แม้ลูกค้าจะส่งลิงค์เพลงมา
-                            </small>
-                            <br><small class="text-muted">
-                                ** รองรับเฉพาะลิงค์เพลงจาก Youtube / Spotify เท่านั้น
-                            </small>
                         </label>
+                        <div class="alert alert-danger mb-2" role="alert">
+                            <div class="fw-bold mb-1">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                                สำคัญ — กรุณาอ่านก่อนใส่ลิงก์เพลง
+                            </div>
+                            <div class="fw-bold">
+                                หากสินค้าที่สั่งไม่รองรับเพลง ทางร้านจะไม่ใส่เพลงให้ แม้ลูกค้าจะส่งลิงก์เพลงมา
+                            </div>
+                            <small class="d-block mt-1">
+                                กรุณาใส่ลิงก์เฉพาะสินค้าที่ระบุว่า “รองรับเพลง” เท่านั้น หากไม่แน่ใจ ให้เว้นช่องนี้ว่างและสอบถามแอดมินก่อน
+                            </small>
+                            <small class="d-block mt-1">รองรับเฉพาะลิงก์จาก YouTube หรือ Spotify</small>
+                        </div>
                         <input type="text" class="form-control rounded-3" id="musiclink" name="musiclink">
                         <div class="invalid-feedback">
                             กรุณากรอกลิงค์เพลงจาก Youtube / Spotify
@@ -409,7 +475,6 @@
                         </div>
                         <input type="file" class="form-control rounded-3" id="image" name="image" accept="image/*"
                             multiple hidden>
-                        <input type="file" name="temp-imgs" id="temp-imgs" class="d-none" multiple hidden>
                         </label>
                     </div>
                     <div class="col-12">
@@ -478,11 +543,10 @@
         const LIFF_SDK_URL = 'https://static.line-scdn.net/liff/edge/2/sdk.js';
         let liffInitializationPromise = null;
         let isLiffReady = false;
+        let selectedImages = [];
 
         function updateSubmitButtonState() {
-            const confirmed = $('#pdpaConsent').is(':checked') &&
-                $('#dataConfirm').is(':checked');
-            $('button[type="submit"]').prop('disabled', !confirmed || !isLiffReady);
+            $('button[type="submit"]').prop('disabled', !isLiffReady);
         }
 
         function loadLiffSdk(attempt) {
@@ -591,6 +655,10 @@
 
         $(document).ready(async function () {
             updateSubmitButtonState();
+            const today = new Date();
+            const localToday = new Date(today.getTime() - today.getTimezoneOffset() * 60000)
+                .toISOString().split('T')[0];
+            $('#useDate').attr('min', localToday);
 
             try {
                 const identity = await initializeLiff();
@@ -670,28 +738,11 @@
             $('#image').click();
         });
 
-        $('#image').change(function (e) {
-
-            let files = e.target.files;
-            let tempFiles = $('#temp-imgs')[0].files;
-            let newFiles = Array.from(files);
-            let allFiles = [...tempFiles, ...newFiles];
-            // The temporary input is the source of truth. Clearing the picker
-            // also lets a customer select the same file again after removing it.
+        $('#image').change(async function (e) {
+            const newFiles = Array.from(e.target.files || []);
             e.target.value = '';
 
-            // Check for duplicate files
-            let fileNames = new Set();
-            allFiles = allFiles.filter(file => {
-                if (fileNames.has(file.name)) {
-                    return false;
-                } else {
-                    fileNames.add(file.name);
-                    return true;
-                }
-            });
-
-            if (allFiles.length > 8) {
+            if (selectedImages.length + newFiles.length > 8) {
                 Swal.fire({
                     icon: 'error',
                     title: 'จำนวนรูปเกินกว่าที่ระบบรับได้ กรุณาใส่รูปตามจำนวนที่แบบของคุณรองรับ',
@@ -724,57 +775,88 @@
                 },
             })
 
-            let datatransfer = new DataTransfer();
-            allFiles.forEach(file => {
-                datatransfer.items.add(file);
-            });
-            $('#temp-imgs')[0].files = datatransfer.files;
+            try {
+                for (const file of newFiles) {
+                    const fileKey = [file.name, file.size, file.lastModified].join(':');
+                    if (selectedImages.some(image => image.key === fileKey)) continue;
 
-            renderImagePreview(allFiles);
+                    const fileBuffer = await readFileCopy(file);
+                    const previewBlob = new Blob([fileBuffer], {
+                        type: file.type || 'application/octet-stream'
+                    });
+                    selectedImages.push({
+                        id: (window.crypto && window.crypto.randomUUID)
+                            ? window.crypto.randomUUID()
+                            : Date.now() + '-' + Math.random().toString(16).slice(2),
+                        key: fileKey,
+                        name: file.name,
+                        size: file.size,
+                        type: file.type,
+                        lastModified: file.lastModified,
+                        fileBuffer,
+                        previewUrl: URL.createObjectURL(previewBlob)
+                    });
+                }
+                renderImagePreview();
+            } catch (error) {
+                console.error('Unable to cache selected image:', error);
+                renderImagePreview();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ไม่สามารถอ่านรูปภาพได้',
+                    text: 'กรุณาเลือกรูปใหม่อีกครั้ง',
+                    confirmButtonText: 'ปิด',
+                    allowOutsideClick: false
+                });
+            }
         });
 
-        function renderImagePreview(allFiles) {
+        function readFileCopy(file) {
+            if (typeof file.arrayBuffer === 'function') {
+                return file.arrayBuffer();
+            }
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = event => resolve(event.target.result);
+                reader.onerror = () => reject(new Error('Unable to read ' + file.name));
+                reader.onabort = () => reject(new Error('Reading was cancelled for ' + file.name));
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        function renderImagePreview() {
             $('#image-label').text(
-                allFiles.length
-                    ? 'เลือกแล้ว (' + allFiles.length + ' รูป)'
+                selectedImages.length
+                    ? 'เลือกแล้ว (' + selectedImages.length + ' รูป)'
                     : 'คลิกเพื่อเลือกรูปภาพ'
             );
             $('.img-grid-col').empty();
-            allFiles.forEach((file, i) => {
+            selectedImages.forEach((image, i) => {
                 let eq = i % 3;
-                let reader = new FileReader();
-                reader.onload = function (e) {
-                    let img = $($('#img-template').html());
-                    img.find('img').attr('src', e.target.result);
-                    img.find('span').on('click', function () {
-                        let datatransfer = new DataTransfer();
-                        let files = $('#temp-imgs')[0].files;
-                        for (let i = 0; i < files.length; i++) {
-                            if (files[i].name != file.name) {
-                                datatransfer.items.add(files[i]);
-                            }
-                        }
-                        $('#temp-imgs')[0].files = datatransfer.files;
-                        renderImagePreview([...datatransfer.files]);
+                let img = $($('#img-template').html());
+                img.find('img').attr('src', image.previewUrl);
+                img.find('span').on('click', function () {
+                    URL.revokeObjectURL(image.previewUrl);
+                    image.fileBuffer = null;
+                    selectedImages = selectedImages.filter(item => item.id !== image.id);
+                    renderImagePreview();
+                });
+                img.find('img').on('click', function () {
+                    Swal.fire({
+                        imageUrl: image.previewUrl,
+                        imageWidth: '100%',
+                        imageHeight: '100%',
+                        showCloseButton: true,
+                        showConfirmButton: false,
+                        allowOutsideClick: false
                     });
-                    img.find('img').on('click', function () {
-                        Swal.fire({
-                            imageUrl: e.target.result,
-                            imageWidth: '100%',
-                            imageHeight: '100%',
-                            showCloseButton: true,
-                            showConfirmButton: false,
-                            allowOutsideClick: false
-                        });
-                    });
-                    let div = $('.img-grid-col').eq(eq)
-                    div.append(img)
-                    if (i == allFiles.length - 1) {
-                        Swal.close();
-                    }
+                });
+                $('.img-grid-col').eq(eq).append(img);
+                if (i === selectedImages.length - 1) {
+                    Swal.close();
                 }
-                reader.readAsDataURL(file);
             });
+            if (selectedImages.length === 0) Swal.close();
         }
 
         async function submit() {
@@ -862,8 +944,7 @@
         }
 
         async function uploadFiles() {
-            const files = [...document.getElementById('temp-imgs').files];
-            if (files.length === 0) {
+            if (selectedImages.length === 0) {
                 throw new Error('กรุณาเลือกรูปภาพ');
             }
 
@@ -889,12 +970,12 @@
                 throw new Error('ไม่สามารถรับสิทธิ์อัปโหลดได้');
             }
 
-            return Promise.all(files.map((file, index) =>
-                uploadSingleFile(file, index, token, folderId)
+            return Promise.all(selectedImages.map((image, index) =>
+                uploadSingleFile(image, index, token, folderId)
             ));
         }
 
-        function uploadSingleFile(file, index, token, folderId) {
+        function uploadSingleFile(image, index, token, folderId) {
             return new Promise((resolve, reject) => {
                 const progressId = 'p' + (index + 1);
                 const progress = $('<div>', {
@@ -902,7 +983,7 @@
                     class: 'col-12 text-truncate'
                 });
                 $('#progress').append(progress);
-                progress.text('กำลังเตรียมอัปโหลด ' + file.name);
+                progress.text('กำลังเตรียมอัปโหลด ' + image.name);
 
                 let settled = false;
                 const finish = (callback, value) => {
@@ -912,28 +993,23 @@
                     callback(value);
                 };
                 const timeout = setTimeout(() => {
-                    finish(reject, new Error('อัปโหลด ' + file.name + ' ใช้เวลานานเกินไป'));
+                    finish(reject, new Error('อัปโหลด ' + image.name + ' ใช้เวลานานเกินไป'));
                 }, 120000);
 
-                const reader = new FileReader();
-                reader.onerror = () => {
-                    finish(reject, new Error('ไม่สามารถอ่านไฟล์ ' + file.name));
-                };
-                reader.onload = event => {
-                    try {
-                        const uploader = new ResumableUploadToGoogleDrive();
-                        uploader.Do({
-                            fileName: file.name,
-                            fileSize: file.size,
-                            fileType: file.type,
-                            fileBuffer: event.target.result,
+                try {
+                    const uploader = new ResumableUploadToGoogleDrive();
+                    uploader.Do({
+                            fileName: image.name,
+                            fileSize: image.size,
+                            fileType: image.type,
+                            fileBuffer: image.fileBuffer,
                             accessToken: token,
                             folderId,
                             fields: 'id',
                         }, (response, error) => {
                             if (error) {
                                 console.error('Upload failed:', error);
-                                finish(reject, new Error('อัปโหลด ' + file.name + ' ไม่สำเร็จ'));
+                                finish(reject, new Error('อัปโหลด ' + image.name + ' ไม่สำเร็จ'));
                                 return;
                             }
 
@@ -943,26 +1019,24 @@
                                     response.progressNumber.end * 100
                                 );
                                 progress.text(
-                                    'กำลังอัปโหลด ' + file.name + ': ' + percent + '%'
+                                    'กำลังอัปโหลด ' + image.name + ': ' + percent + '%'
                                 );
                             }
 
                             if (response.status === 'Done') {
                                 if (!response.result || !response.result.id) {
                                     finish(reject, new Error(
-                                        'ไม่ได้รับรหัสไฟล์สำหรับ ' + file.name
+                                        'ไม่ได้รับรหัสไฟล์สำหรับ ' + image.name
                                     ));
                                     return;
                                 }
-                                progress.text('อัปโหลดสำเร็จ (' + file.name + ')');
+                                progress.text('อัปโหลดสำเร็จ (' + image.name + ')');
                                 finish(resolve, response.result.id);
                             }
                         });
-                    } catch (error) {
-                        finish(reject, error);
-                    }
-                };
-                reader.readAsArrayBuffer(file);
+                } catch (error) {
+                    finish(reject, error);
+                }
             });
         }
 
@@ -983,6 +1057,11 @@
         }
 
         function success() {
+            selectedImages.forEach(image => {
+                URL.revokeObjectURL(image.previewUrl);
+                image.fileBuffer = null;
+            });
+            selectedImages = [];
             $('main').html('')
             $('main').append(`
             <div class="row">
@@ -1004,13 +1083,45 @@
             Array.prototype.slice.call(forms)
                 .forEach(function (form) {
                     form.addEventListener('submit', function (event) {
+                        event.preventDefault()
+
+                        const missingConfirmations = [];
+                        if (!$('#pdpaConsent').is(':checked')) {
+                            missingConfirmations.push('ยอมรับการเก็บและใช้ข้อมูลส่วนบุคคล');
+                        }
+                        if (!$('#dataConfirm').is(':checked')) {
+                            missingConfirmations.push('ยืนยันว่าตรวจสอบข้อมูลทั้งหมดแล้ว');
+                        }
+
+                        if (missingConfirmations.length > 0) {
+                            event.stopPropagation()
+                            form.classList.add('was-validated')
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'กรุณาติ๊กยืนยันก่อนส่งข้อมูล',
+                                html: '<div class="text-start">กรุณาติ๊กให้ครบ:<br>• ' +
+                                    missingConfirmations.join('<br>• ') + '</div>',
+                                confirmButtonText: 'กลับไปติ๊กยืนยัน',
+                                customClass: {
+                                    title: 'text-danger',
+                                    popup: 'rounded-4'
+                                },
+                                allowOutsideClick: false
+                            }).then(function () {
+                                const firstMissing = !$('#pdpaConsent').is(':checked')
+                                    ? $('#pdpaConsent')
+                                    : $('#dataConfirm');
+                                firstMissing[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                firstMissing.focus();
+                            });
+                            return;
+                        }
+
                         if (!form.checkValidity()) {
-                            event.preventDefault()
                             event.stopPropagation()
                             form.classList.add('was-validated')
                             $(form).find(':invalid').first().focus();
                         } else {
-                            event.preventDefault()
                             submit()
                         }
                     }, false)
