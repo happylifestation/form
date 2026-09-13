@@ -546,9 +546,7 @@
         let selectedImages = [];
 
         function updateSubmitButtonState() {
-            const confirmed = $('#pdpaConsent').is(':checked') &&
-                $('#dataConfirm').is(':checked');
-            $('button[type="submit"]').prop('disabled', !confirmed || !isLiffReady);
+            $('button[type="submit"]').prop('disabled', !isLiffReady);
         }
 
         function loadLiffSdk(attempt) {
@@ -1085,13 +1083,45 @@
             Array.prototype.slice.call(forms)
                 .forEach(function (form) {
                     form.addEventListener('submit', function (event) {
+                        event.preventDefault()
+
+                        const missingConfirmations = [];
+                        if (!$('#pdpaConsent').is(':checked')) {
+                            missingConfirmations.push('ยอมรับการเก็บและใช้ข้อมูลส่วนบุคคล');
+                        }
+                        if (!$('#dataConfirm').is(':checked')) {
+                            missingConfirmations.push('ยืนยันว่าตรวจสอบข้อมูลทั้งหมดแล้ว');
+                        }
+
+                        if (missingConfirmations.length > 0) {
+                            event.stopPropagation()
+                            form.classList.add('was-validated')
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'กรุณาติ๊กยืนยันก่อนส่งข้อมูล',
+                                html: '<div class="text-start">กรุณาติ๊กให้ครบ:<br>• ' +
+                                    missingConfirmations.join('<br>• ') + '</div>',
+                                confirmButtonText: 'กลับไปติ๊กยืนยัน',
+                                customClass: {
+                                    title: 'text-danger',
+                                    popup: 'rounded-4'
+                                },
+                                allowOutsideClick: false
+                            }).then(function () {
+                                const firstMissing = !$('#pdpaConsent').is(':checked')
+                                    ? $('#pdpaConsent')
+                                    : $('#dataConfirm');
+                                firstMissing[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                firstMissing.focus();
+                            });
+                            return;
+                        }
+
                         if (!form.checkValidity()) {
-                            event.preventDefault()
                             event.stopPropagation()
                             form.classList.add('was-validated')
                             $(form).find(':invalid').first().focus();
                         } else {
-                            event.preventDefault()
                             submit()
                         }
                     }, false)
