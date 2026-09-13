@@ -467,7 +467,7 @@
                         </label>
                         <div class="alert alert-warning py-2 small mb-2">
                             <i class="bi bi-info-circle-fill"></i>
-                            กรุณาอัปโหลดรูปตามจำนวนที่แบบสินค้ารองรับเท่านั้น บางแบบรองรับ 1 รูป และบางแบบรองรับหลายรูป
+                            เลือกได้สูงสุด 8 รูป กรุณาอัปโหลดตามจำนวนที่แบบสินค้ารองรับเท่านั้น บางแบบรองรับ 1 รูป และบางแบบรองรับหลายรูป
                         </div>
                         <div class="rounded-3 border bg-secondary-subtle p-2 text-center" style="cursor: pointer;"
                             id="image-label">
@@ -544,6 +544,7 @@
         let liffInitializationPromise = null;
         let isLiffReady = false;
         let selectedImages = [];
+        const MAX_SELECTED_IMAGES = 8;
 
         function updateSubmitButtonState() {
             $('button[type="submit"]').prop('disabled', !isLiffReady);
@@ -742,20 +743,19 @@
             const newFiles = Array.from(e.target.files || []);
             e.target.value = '';
 
-            if (selectedImages.length + newFiles.length > 8) {
+            if (selectedImages.length + newFiles.length > MAX_SELECTED_IMAGES) {
                 Swal.fire({
                     icon: 'error',
-                    title: 'จำนวนรูปเกินกว่าที่ระบบรับได้ กรุณาใส่รูปตามจำนวนที่แบบของคุณรองรับ',
+                    title: 'เลือกได้สูงสุด 8 รูป',
+                    text: 'กรุณาลบบางรูปออกก่อน หรือเลือกใหม่ให้รวมแล้วไม่เกิน 8 รูป และต้องตรงกับจำนวนที่แบบสินค้ารองรับ',
                     customClass: {
                         icon: 'text-danger',
                         title: 'text-danger',
                         content: 'text-dark',
                         popup: 'rounded-4'
                     },
-                    showConfirmButton: false,
-                    timer: 2000,
+                    confirmButtonText: 'เข้าใจแล้ว',
                     allowOutsideClick: false,
-                    timerProgressBar: true
                 })
                 return false;
             }
@@ -825,11 +825,10 @@
         }
 
         function renderImagePreview() {
-            $('#image-label').text(
-                selectedImages.length
-                    ? 'เลือกแล้ว (' + selectedImages.length + ' รูป)'
-                    : 'คลิกเพื่อเลือกรูปภาพ'
-            );
+            const remaining = MAX_SELECTED_IMAGES - selectedImages.length;
+            $('#image-label').text(selectedImages.length
+                ? 'เลือกแล้ว ' + selectedImages.length + '/8 รูป • เพิ่มได้อีก ' + remaining + ' รูป'
+                : 'คลิกเพื่อเลือกรูปภาพ (สูงสุด 8 รูป)');
             $('.img-grid-col').empty();
             selectedImages.forEach((image, i) => {
                 let eq = i % 3;
@@ -923,11 +922,14 @@
                 });
             } catch (error) {
                 console.error('Submission failed:', error);
+                const errorMessage = getSubmissionErrorMessage(error);
+                const recoveryGuidance = getRecoveryGuidance(errorMessage);
                 await Swal.fire({
                     icon: 'error',
                     title: 'ส่งข้อมูลไม่สำเร็จ',
-                    text: error.message || 'กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่อีกครั้ง',
-                    footer: '<div class="text-center text-danger fw-bold">หากลองใหม่แล้วยังไม่สำเร็จ กรุณาปิดฟอร์มนี้ แล้วเปิดใหม่จากเมนู LINE ก่อนส่งอีกครั้ง</div>',
+                    text: errorMessage,
+                    footer: '<div class="text-start"><strong class="text-danger">วิธีแก้ไข</strong><br>' +
+                        escapeHtml(recoveryGuidance) + '</div>',
                     customClass: {
                         icon: 'text-danger',
                         title: 'text-danger',
@@ -942,6 +944,37 @@
             } finally {
                 updateSubmitButtonState();
             }
+        }
+
+        function getSubmissionErrorMessage(error) {
+            if (error && error.message) return error.message;
+            if (error && error.statusText === 'timeout') {
+                return 'การเชื่อมต่อใช้เวลานานเกินกำหนด';
+            }
+            return 'ไม่สามารถติดต่อระบบได้';
+        }
+
+        function getRecoveryGuidance(message) {
+            if (/อ่านรูป|อ่านไฟล์/i.test(message)) {
+                return 'ปิดฟอร์ม แล้วเปิดใหม่จากเมนู LINE จากนั้นเลือกรูปใหม่อีกครั้ง';
+            }
+            if (/LINE|บัญชี LINE|ระบุบัญชี/i.test(message)) {
+                return 'ปิดฟอร์ม แล้วเปิดใหม่จากเมนู LINE โดยตรง และอนุญาตการเข้าสู่ระบบหากมีข้อความถาม';
+            }
+            if (/สิทธิ์|Token|token/i.test(message)) {
+                return 'ตรวจสอบอินเทอร์เน็ต ปิดฟอร์ม แล้วเปิดใหม่จากเมนู LINE เพื่อขอสิทธิ์อัปโหลดใหม่';
+            }
+            if (/อัปโหลด|รหัสไฟล์/i.test(message)) {
+                return 'เปลี่ยนไปใช้ Wi-Fi หรือสัญญาณที่เสถียร แล้วกดลองใหม่ หากยังไม่สำเร็จให้ปิดฟอร์ม เปิดใหม่จากเมนู LINE และเลือกรูปใหม่';
+            }
+            if (/นานเกิน|เวลา|timeout/i.test(message)) {
+                return 'ตรวจสอบสัญญาณอินเทอร์เน็ต รอสักครู่แล้วลองใหม่ หรือปิดฟอร์มและเปิดใหม่จากเมนู LINE';
+            }
+            return 'ตรวจสอบอินเทอร์เน็ตแล้วกดลองใหม่ หากยังไม่สำเร็จให้ปิดฟอร์ม แล้วเปิดใหม่จากเมนู LINE';
+        }
+
+        function escapeHtml(value) {
+            return $('<div>').text(value).html();
         }
 
         const MAX_CONCURRENT_UPLOADS = 3;
