@@ -381,19 +381,23 @@
                         </div>
                     </div>
                     <div class="col-12">
-                        <label for="detail">
+                        <label for="musiclink">
                             <i class="bi bi-file-music-fill text-red"></i>
                             ลิงค์เพลงจาก Youtube / Spotify <span class="text-muted">(เฉพาะแบบที่รองรับเพลง)</span>
-                            <br><small class="text-danger fw-bold">
-                                ** กรุณาใส่ลิงค์เพลงเฉพาะกรณีที่แบบสินค้าที่สั่งรองรับเพลงเท่านั้น
-                            </small>
-                            <br><small class="text-muted">
-                                ** หากแบบที่เลือกไม่รองรับเพลง ทางร้านจะไม่สามารถใส่เพลงในงานได้ แม้ลูกค้าจะส่งลิงค์เพลงมา
-                            </small>
-                            <br><small class="text-muted">
-                                ** รองรับเฉพาะลิงค์เพลงจาก Youtube / Spotify เท่านั้น
-                            </small>
                         </label>
+                        <div class="alert alert-danger mb-2" role="alert">
+                            <div class="fw-bold mb-1">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                                สำคัญ — กรุณาอ่านก่อนใส่ลิงก์เพลง
+                            </div>
+                            <div class="fw-bold">
+                                หากสินค้าที่สั่งไม่รองรับเพลง ทางร้านจะไม่ใส่เพลงให้ แม้ลูกค้าจะส่งลิงก์เพลงมา
+                            </div>
+                            <small class="d-block mt-1">
+                                กรุณาใส่ลิงก์เฉพาะสินค้าที่ระบุว่า “รองรับเพลง” เท่านั้น หากไม่แน่ใจ ให้เว้นช่องนี้ว่างและสอบถามแอดมินก่อน
+                            </small>
+                            <small class="d-block mt-1">รองรับเฉพาะลิงก์จาก YouTube หรือ Spotify</small>
+                        </div>
                         <input type="text" class="form-control rounded-3" id="musiclink" name="musiclink">
                         <div class="invalid-feedback">
                             กรุณากรอกลิงค์เพลงจาก Youtube / Spotify
